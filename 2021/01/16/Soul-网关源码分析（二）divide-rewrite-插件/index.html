@@ -17,15 +17,15 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"hazyrain.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"hazyrain.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="在上一节里我们编译好了 Soul 网关的源码，今天我们从rewrite插件开始学习如何对服务进行代理并重写路径。">
+  <meta name="description" content="在上一节里我们编译好了 Soul 网关的源码，今天我们从rewrite插件开始学习如何对服务进行代理并重写路径。 首先我们用Python写一个简单的Flask应用： 123456789101112from flask import Flaskapp &#x3D; Flask(__name__)@app.route(&#39;&#x2F;foo&#x2F;bar&#x2F;&#39;)def hello_world():    return &#39;Hello">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Soul 网关源码分析（二）divide, rewrite 插件">
 <meta property="og:url" content="https://hazyrain.com/2021/01/16/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89divide-rewrite-%E6%8F%92%E4%BB%B6/index.html">
 <meta property="og:site_name" content="冷吟閑酔二三年">
-<meta property="og:description" content="在上一节里我们编译好了 Soul 网关的源码，今天我们从rewrite插件开始学习如何对服务进行代理并重写路径。">
+<meta property="og:description" content="在上一节里我们编译好了 Soul 网关的源码，今天我们从rewrite插件开始学习如何对服务进行代理并重写路径。 首先我们用Python写一个简单的Flask应用： 123456789101112from flask import Flaskapp &#x3D; Flask(__name__)@app.route(&#39;&#x2F;foo&#x2F;bar&#x2F;&#39;)def hello_world():    return &#39;Hello">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210115211421555.png">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210115210809657.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpY2tlZFdpbmdz,size_16,color_FFFFFF,t_70">
@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210116014205816.png">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210116015548504.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpY2tlZFdpbmdz,size_16,color_FFFFFF,t_70">
 <meta property="article:published_time" content="2021-01-16T08:13:22.000Z">
-<meta property="article:modified_time" content="2021-01-16T08:46:11.995Z">
+<meta property="article:modified_time" content="2021-01-16T08:53:58.717Z">
 <meta property="article:author" content="Dige Qiao">
 <meta property="article:tag" content="Java">
 <meta property="article:tag" content="Soul">
@@ -205,7 +205,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-01-16 16:13:22 / 修改时间：16:46:11" itemprop="dateCreated datePublished" datetime="2021-01-16T16:13:22+08:00">2021-01-16</time>
+              <time title="创建时间：2021-01-16 16:13:22 / 修改时间：16:53:58" itemprop="dateCreated datePublished" datetime="2021-01-16T16:13:22+08:00">2021-01-16</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -229,8 +229,6 @@
 
       
         <p>在上一节里我们编译好了 Soul 网关的源码，今天我们从rewrite插件开始学习如何对服务进行代理并重写路径。</p>
-<a id="more"></a>
-
 <p>首先我们用Python写一个简单的Flask应用：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/foo/bar/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello_world</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'Hello World!'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app.run()</span><br></pre></td></tr></table></figure>
 
