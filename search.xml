@@ -167,6 +167,8 @@
     <title>Soul 网关源码分析（二）divide, rewrite 插件</title>
     <url>/2021/01/16/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89divide-rewrite-%E6%8F%92%E4%BB%B6/</url>
     <content><![CDATA[<p>在上一节里我们编译好了 Soul 网关的源码，今天我们从rewrite插件开始学习如何对服务进行代理并重写路径。</p>
+<a id="more"></a>
+
 <p>首先我们用Python写一个简单的Flask应用：</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route('/foo/bar/')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello_world</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'Hello World!'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    app.run()</span><br></pre></td></tr></table></figure>
 
