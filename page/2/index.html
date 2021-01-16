@@ -193,7 +193,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-15 19:54:28" itemprop="dateModified" datetime="2021-01-15T19:54:28+08:00">2021-01-15</time>
+                <time title="修改时间：2021-01-16 16:45:49" itemprop="dateModified" datetime="2021-01-16T16:45:49+08:00">2021-01-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -217,23 +217,14 @@
 
       
           <p>在本地调试php通过使用php的curl 调用Thrift rpc 服务时, 使用了curl, 但是一直出现超时的现象,一直到超过请求所附带的超时时间, 这个是因为Windows下的php是以php-cgi进程的形式运行的.</p>
-<p>我的php项目的fastcig-pass的设置为(127.0.0.1:9000)。</p>
-<p>默认设置是以keepalive方式请求，接收到PHP文件时,交与php-cgi解析处理,等待响应。</p>
-<p>而在本地文件以CURL请求本地环境中PHP文件时,之前的PHP还在等待CURL后的结果，这时9000端口已经被占用.导致CURL一直在处于等待状态.</p>
-<p>curl 其中一项设置: </p>
-<p>curl_setopt($ch, CURLOPT_TIMEOUT, 5);</p>
-<p>当到达5秒后, curl 被强制中断, 反而收到了RPC传来的response</p>
-<p>在查阅资料后, 我发现Windows 中php-cgi并不能像Linux环境下的php-fpm 那样自己创建新的进程, 只能通过command的方式启动两个进程…</p>
-<p><strong>我的解决方案</strong></p>
-<p>把php客户端的fastcgi_pass 设置为了127.0.0.1:9004</p>
-<p>打开两个cmd 分别在php根目录下执行这两个命令:</p>
-<ol>
-<li>php-cgi.exe -b 127.0.0.1:9000 -c php.ini </li>
-<li>php-cgi.exe -b 127.0.0.1:9004 -c php.ini </li>
-</ol>
-<p>但是cmd 命令窗口不能关闭。</p>
-<p>问题解决.</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2018/04/15/php-%E5%9C%A8Windows%E5%BC%80%E5%8F%91%E4%B8%8B%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
