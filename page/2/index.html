@@ -162,6 +162,82 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2019/05/22/Java-Exception-Error/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Dige Qiao">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="冷吟閑酔二三年">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/05/22/Java-Exception-Error/" class="post-title-link" itemprop="url">Java Exception & Error</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-05-22 20:55:34" itemprop="dateCreated datePublished" datetime="2019-05-22T20:55:34+08:00">2019-05-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-15 19:54:28" itemprop="dateModified" datetime="2021-01-15T19:54:28+08:00">2021-01-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>###java.lang.ClassNotFoundException</p>
+<p>This exception indicates that the class was not found on the classpath. This indicates that we were trying to load the class definition, and the class did not exist on the classpath.</p>
+<p>###java.lang.NoClassDefFoundError<br>This exception indicates that the JVM looked in its internal class definition data structure for the definition of a class and did not find it. This is different than saying that it could not be loaded from the classpath. Usually this indicates that we previously attempted to load a class from the classpath, but it failed for some reason - now we’re trying to use the class again (and thus need to load it, since it failed last time), but we’re not even going to try to load it, because we failed loading it earlier (and reasonably suspect that we would fail again). The earlier failure could be a ClassNotFoundException or an ExceptionInInitializerError (indicating a failure in the static initialization block) or any number of other problems. The point is, a NoClassDefFoundError is not necessarily a classpath problem.</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2018/08/03/Vue-js%E5%8F%8C%E5%90%91%E6%95%B0%E6%8D%AE%E7%BB%91%E5%AE%9A%E6%8E%A2%E7%A9%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -534,7 +610,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
