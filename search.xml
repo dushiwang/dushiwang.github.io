@@ -553,4 +553,28 @@
         <tag>Soul</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Soul 网关源码分析（十一）ratelimiter 插件（一）</title>
+    <url>/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/</url>
+    <content><![CDATA[<p>Soul 网关提供了限流插件，方便用户控制指定时间段内经过网关的请求数量。</p>
+<a id="more"></a>
+<h2 id="什么是“限流”？"><a href="#什么是“限流”？" class="headerlink" title="什么是“限流”？"></a>什么是“限流”？</h2><p>火锅店一般都有最大的容客量，大桌小桌的席位数是固定的。在就餐高峰期时，大量的食客会蜂拥而至，一般火锅店的员工是根据座位数分配的，如果不限制进入火锅店的人流，员工会忙不过来，食客的体验也会变差。在这里限制座位数就是一种限流的手段。而取到号牌并被叫到号的顾客才能入座就餐，这跟令牌桶</p>
+<p>后端架构中的限流一般分为两种，对外主要针对 DDOS攻击以及爬虫防范，对内主要控制热点公共服务调用的均匀分配。</p>
+<h2 id="Soul-是如何做限流的？"><a href="#Soul-是如何做限流的？" class="headerlink" title="Soul 是如何做限流的？"></a>Soul 是如何做限流的？</h2><p>首先我们来看看 soul-plugin-ratelimiter 的文件目录结构：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">└── src</span><br><span class="line">    ├── main</span><br><span class="line">    │   ├── java</span><br><span class="line">    │   │   └── org</span><br><span class="line">    │   │       └── dromara</span><br><span class="line">    │   │           └── soul</span><br><span class="line">    │   │               └── plugin</span><br><span class="line">    │   │                   └── ratelimiter</span><br><span class="line">    │   │                       ├── RateLimiterPlugin.java AbstractSoulPlugin 实现类，核心函数是 doExecute，</span><br><span class="line">    │   │                       ├── config</span><br><span class="line">    │   │                       │   └── RateLimiterConfig.java ratelimiter 相关配置项</span><br><span class="line">    │   │                       ├── executor</span><br><span class="line">    │   │                       │   └── RedisRateLimiter.java 基于 redis 的令牌桶算法实现，核心函数是 isAllowed</span><br><span class="line">    │   │                       ├── handler</span><br><span class="line">    │   │                       │   └── RateLimiterPluginDataHandler.java 从插件配置读取数据的handler</span><br><span class="line">    │   │                       └── response</span><br><span class="line">    │   │                           └── RateLimiterResponse.java ratelimiter response 类</span><br><span class="line">    │   └── resources</span><br><span class="line">    │       └── META-INF</span><br><span class="line">    │           └── scripts</span><br><span class="line">    │               ├── concurrent_request_rate_limiter.lua 并发 ratelimiter lua脚本</span><br><span class="line">    │               └── request_rate_limiter.lua ratelimiter lua脚本</span><br><span class="line">    └── test</span><br></pre></td></tr></table></figure>
+<p>首先我们需要启动 redis-server</p>
+<p>然后在 admin 中配置 ratelimiter 插件，首先在插件管理中开启 ratelimiter，再配置 ratelimiter 的 selecter 和 rule：<br><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d322f3fc554e498f87aa3851e65c0824~tplv-k3u1fbpfcp-watermark.image" alt=""></p>
+<p>配置完成后使用postman模拟不间断的 200 次请求：<br><img src="https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b717650ad5e14096bd37db58b77b9356~tplv-k3u1fbpfcp-watermark.image" alt=""><br>在执行完 10 次后的 第11次，ratelimiter 阻断了我们的请求，因为令牌桶中的令牌已经被消耗光了（capacity 为 10），而填充速率（rate）为 5，意味着用户每秒最多请求 5次 后就被限流。</p>
+<p>下图是令牌桶算法的分配流程，其实跟火锅店分配排队号牌是差不多的原理：</p>
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/08542f0b3bce4f32b2608d2a7f021d3b~tplv-k3u1fbpfcp-watermark.image" alt=""></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>ratelimiter 可以帮助我们在网关层过滤掉不需要或者异常的请求而避免消耗后端服务的资源，这也是我认为网关在软件架构中的重要职能之一，Soul 使用 redis 做令牌桶算法，明天的计划是深入剖析 通过 lua 脚本实现令牌桶算法的原理。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>interview</tag>
+      </tags>
+  </entry>
 </search>

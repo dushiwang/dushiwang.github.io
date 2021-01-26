@@ -3,14 +3,21 @@
 
 
     <url>
-        <loc>https://hazyrain.com/tags/Soul/</loc>
-        <lastmod>2021-01-26T13:35:45.526Z</lastmod>
+        <loc>https://hazyrain.com/tags/interview/</loc>
+        <lastmod>2021-01-26T17:13:41.365Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
         <loc>https://hazyrain.com/tags/Java/</loc>
+        <lastmod>2021-01-26T17:13:41.365Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://hazyrain.com/tags/Soul/</loc>
         <lastmod>2021-01-26T13:35:45.526Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -54,13 +61,6 @@
     <url>
         <loc>https://hazyrain.com/tags/mixture/</loc>
         <lastmod>2021-01-15T11:54:28.825Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
-        <loc>https://hazyrain.com/tags/interview/</loc>
-        <lastmod>2021-01-15T11:54:28.824Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
