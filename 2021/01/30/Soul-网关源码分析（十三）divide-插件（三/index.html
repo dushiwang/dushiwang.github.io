@@ -20,28 +20,36 @@
     var CONFIG = {"hostname":"hazyrain.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="冷吟閑酔二三年">
-<meta property="og:url" content="https://hazyrain.com/index.html">
+  <meta name="description" content="今天我们继续看 divide 下的随机负载均衡策略，手先看下 这个 Random 类在 MomoSec 插件中被规则检测出了： 其中的描述提到：java.util.Random依赖一个可被预测的伪随机数生成器，因为  java.util.Random类中实现的随机算法是伪随机，也就是有规则的随机，所谓有规则的就是在给定种(seed)的区间内随机生成数字； 相同种子数的Random对象，相同次数生成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Soul 网关源码分析（十三）divide 插件（三)">
+<meta property="og:url" content="https://hazyrain.com/2021/01/30/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89divide-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%89/index.html">
 <meta property="og:site_name" content="冷吟閑酔二三年">
+<meta property="og:description" content="今天我们继续看 divide 下的随机负载均衡策略，手先看下 这个 Random 类在 MomoSec 插件中被规则检测出了： 其中的描述提到：java.util.Random依赖一个可被预测的伪随机数生成器，因为  java.util.Random类中实现的随机算法是伪随机，也就是有规则的随机，所谓有规则的就是在给定种(seed)的区间内随机生成数字； 相同种子数的Random对象，相同次数生成">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cfaec6cf8d2144b6b70f533412e3d9e6~tplv-k3u1fbpfcp-watermark.image">
+<meta property="article:published_time" content="2021-01-29T16:58:32.000Z">
+<meta property="article:modified_time" content="2021-01-29T16:59:08.621Z">
 <meta property="article:author" content="Dige Qiao">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="interview">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cfaec6cf8d2144b6b70f533412e3d9e6~tplv-k3u1fbpfcp-watermark.image">
 
-<link rel="canonical" href="https://hazyrain.com/">
+<link rel="canonical" href="https://hazyrain.com/2021/01/30/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89divide-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%89/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>冷吟閑酔二三年</title>
+  <title>Soul 网关源码分析（十三）divide 插件（三) | 冷吟閑酔二三年</title>
   
 
 
@@ -156,9 +164,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -174,10 +183,9 @@
       <meta itemprop="name" content="冷吟閑酔二三年">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/30/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89divide-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%89/" class="post-title-link" itemprop="url">Soul 网关源码分析（十三）divide 插件（三)</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          Soul 网关源码分析（十三）divide 插件（三)
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -210,7 +218,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>今天我们继续看 divide 下的随机负载均衡策略，手先看下 这个 Random 类在 MomoSec 插件中被规则检测出了：<br><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cfaec6cf8d2144b6b70f533412e3d9e6~tplv-k3u1fbpfcp-watermark.image" alt=""></p>
+        <p>今天我们继续看 divide 下的随机负载均衡策略，手先看下 这个 Random 类在 MomoSec 插件中被规则检测出了：<br><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cfaec6cf8d2144b6b70f533412e3d9e6~tplv-k3u1fbpfcp-watermark.image" alt=""></p>
 <p>其中的描述提到：java.util.Random依赖一个可被预测的伪随机数生成器，因为</p>
 <ol>
 <li>java.util.Random类中实现的随机算法是伪随机，也就是有规则的随机，所谓有规则的就是在给定种(seed)的区间内随机生成数字；</li>
@@ -300,706 +308,35 @@
 <p>第一个被遍历的 upstream 会被选中，所以下一次请求将会转发到 B 节点上。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RoundRobinLoadBalance 在设计上跟 Nginx 是类似的，我们可以理解为工作效率越高的程序员接的活越多，责任也越大，因为他在领导心中的权重最高。🤣<br>加锁使用 AtomicBoolean 实现，有效降低了锁的开销。</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/interview/" rel="tag"># interview</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%BA%8C%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%BA%8C%EF%BC%89/" class="post-title-link" itemprop="url">Soul 网关源码分析（十二）ratelimiter 插件（二）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-27 23:22:17 / 修改时间：23:22:37" itemprop="dateCreated datePublished" datetime="2021-01-27T23:22:17+08:00">2021-01-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在上一篇我们熟悉了限流已经 ratelimiter 插件的实现原理，今天我们从源码入手详细地理一下整个流程。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%BA%8C%EF%BC%89/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/" class="post-title-link" itemprop="url">Soul 网关源码分析（十一）ratelimiter 插件（一）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-27 01:13:17 / 修改时间：01:13:41" itemprop="dateCreated datePublished" datetime="2021-01-27T01:13:17+08:00">2021-01-27</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Soul 网关提供了限流插件，方便用户控制指定时间段内经过网关的请求数量。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%80%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/27/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%BA%8C%EF%BC%89ratelimiter-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%BA%8C%EF%BC%89/" rel="prev" title="Soul 网关源码分析（十二）ratelimiter 插件（二）">
+      <i class="fa fa-chevron-left"></i> Soul 网关源码分析（十二）ratelimiter 插件（二）
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
   
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/26/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%EF%BC%89%E4%BD%BF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F%E9%83%A8%E7%BD%B2soul-bootstrap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/26/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%EF%BC%89%E4%BD%BF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F%E9%83%A8%E7%BD%B2soul-bootstrap/" class="post-title-link" itemprop="url">Soul 网关源码分析（十）使用集群模式部署soul-bootstrap</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-26 21:35:07 / 修改时间：21:35:45" itemprop="dateCreated datePublished" datetime="2021-01-26T21:35:07+08:00">2021-01-26</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>分析了多种数据同步方式后，我们来试试 Soul 网关的<strong>集群模式</strong>。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/26/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%EF%BC%89%E4%BD%BF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%A8%A1%E5%BC%8F%E9%83%A8%E7%BD%B2soul-bootstrap/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/24/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B9%9D%EF%BC%89%E4%BD%BF%E7%94%A8-Nacos-%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/24/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B9%9D%EF%BC%89%E4%BD%BF%E7%94%A8-Nacos-%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/" class="post-title-link" itemprop="url">Soul 网关源码分析（九）使用 Nacos 同步数据到网关</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-24 02:44:56 / 修改时间：16:40:09" itemprop="dateCreated datePublished" datetime="2021-01-24T02:44:56+08:00">2021-01-24</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Nacos 是一款发现、配置和微服务管理工具。它提供了一组简单易用的特性集，可以快速实现动态服务发现、服务配置、服务元数据及流量管理。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/24/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B9%9D%EF%BC%89%E4%BD%BF%E7%94%A8-Nacos-%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/23/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%85%AB%EF%BC%89%E4%BD%BF%E7%94%A8-http-%E9%95%BF%E8%BD%AE%E8%AF%A2%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/23/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%85%AB%EF%BC%89%E4%BD%BF%E7%94%A8-http-%E9%95%BF%E8%BD%AE%E8%AF%A2%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/" class="post-title-link" itemprop="url">Soul 网关源码分析（八）使用 http 长轮询同步数据到网关</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-01-23 13:02:20" itemprop="dateCreated datePublished" datetime="2021-01-23T13:02:20+08:00">2021-01-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-26 21:35:37" itemprop="dateModified" datetime="2021-01-26T21:35:37+08:00">2021-01-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>今天我们使用 http长轮询来同步数据到soul-bootstrap，相比websocket方式更为轻量，但同时时效性会略为降低。首先我们来看看什么是http长轮询。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/23/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%85%AB%EF%BC%89%E4%BD%BF%E7%94%A8-http-%E9%95%BF%E8%BD%AE%E8%AF%A2%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/22/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B8%83%EF%BC%89%E4%BD%BF%E7%94%A8zookeeper%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/22/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B8%83%EF%BC%89%E4%BD%BF%E7%94%A8zookeeper%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/" class="post-title-link" itemprop="url">Soul 网关源码分析（七）使用zookeeper同步数据到网关</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-22 01:23:53 / 修改时间：01:27:20" itemprop="dateCreated datePublished" datetime="2021-01-22T01:23:53+08:00">2021-01-22</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>与 websocket 数据同步方式类似，采用 zookeeper 的同步也很简单， 由于 zookeeper 的 watch 机制，sou-bootstrap 会监听配置的node，soul-admin 在启动的时候，也会跟websocker一样将数据全量写入 zookeeper。数据发生变更时，会对zookeeper 的节点做增量更新 ，并更新本地缓存。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/22/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%B8%83%EF%BC%89%E4%BD%BF%E7%94%A8zookeeper%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/21/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%85%AD%EF%BC%89%E4%BD%BF%E7%94%A8websocket%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/21/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%85%AD%EF%BC%89%E4%BD%BF%E7%94%A8websocket%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/" class="post-title-link" itemprop="url">Soul 网关源码分析（六）使用websocket同步数据到网关</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-21 00:50:24 / 修改时间：00:50:56" itemprop="dateCreated datePublished" datetime="2021-01-21T00:50:24+08:00">2021-01-21</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Soul 提供了多种数据同步的策略，默认且推荐的方式是使用 websocket。为了追求极致的响应速度，所有的配置没有选择存到redis，MySQL或是其他存储方式中，而是直接在HashMap中缓存，可以达到极低的延迟。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/21/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%85%AD%EF%BC%89%E4%BD%BF%E7%94%A8websocket%E5%90%8C%E6%AD%A5%E6%95%B0%E6%8D%AE%E5%88%B0%E7%BD%91%E5%85%B3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/19/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%BA%94%EF%BC%89Spring-Cloud-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/19/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%BA%94%EF%BC%89Spring-Cloud-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/" class="post-title-link" itemprop="url">Soul 网关源码分析（五）Spring Cloud 插件（一）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-19 23:55:15 / 修改时间：23:57:31" itemprop="dateCreated datePublished" datetime="2021-01-19T23:55:15+08:00">2021-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>上一篇文章中我们学习了 sign 插件是如何实现请求鉴权的，今天我们来试试 Soul 的Spring Cloud 插件。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/19/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E4%BA%94%EF%BC%89Spring-Cloud-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://hazyrain.com/2021/01/19/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%9B%9B%EF%BC%89sign-%E6%8F%92%E4%BB%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Dige Qiao">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="冷吟閑酔二三年">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/01/19/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%9B%9B%EF%BC%89sign-%E6%8F%92%E4%BB%B6/" class="post-title-link" itemprop="url">Soul 网关源码分析（四）sign 插件</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-01-19 01:47:34 / 修改时间：23:54:57" itemprop="dateCreated datePublished" datetime="2021-01-19T01:47:34+08:00">2021-01-19</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>在上一节中，我们尝试dubbo插件将http协议转换成dubbo协议，今天我们来看看 sign 插件是如何实现请求鉴权的。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/19/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%9B%9B%EF%BC%89sign-%E6%8F%92%E4%BB%B6/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
-  </nav>
 
 
 
@@ -1051,6 +388,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">1.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

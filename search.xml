@@ -597,4 +597,105 @@
         <tag>interview</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Soul 网关源码分析（十三）divide 插件（三)</title>
+    <url>/2021/01/30/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E4%B8%89%EF%BC%89divide-%E6%8F%92%E4%BB%B6%EF%BC%88%E4%B8%89/</url>
+    <content><![CDATA[<p>今天我们继续看 divide 下的随机负载均衡策略，手先看下 这个 Random 类在 MomoSec 插件中被规则检测出了：<br><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/cfaec6cf8d2144b6b70f533412e3d9e6~tplv-k3u1fbpfcp-watermark.image" alt=""></p>
+<p>其中的描述提到：java.util.Random依赖一个可被预测的伪随机数生成器，因为</p>
+<ol>
+<li>java.util.Random类中实现的随机算法是伪随机，也就是有规则的随机，所谓有规则的就是在给定种(seed)的区间内随机生成数字；</li>
+<li>相同种子数的Random对象，相同次数生成的随机数字是完全相同的；</li>
+<li>Random类中各方法生成的随机数字都是均匀分布的，也就是说区间内部的数字生成的几率均等；</li>
+</ol>
+<p>其实这个地方随机数只是为了负载均衡策略，不会有这样的问题。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Join</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomLoadBalance</span> <span class="keyword">extends</span> <span class="title">AbstractLoadBalance</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//无参构造函数创建的 Random 实例的 seed 是当年的 纳秒时间戳</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Random RANDOM = <span class="keyword">new</span> Random();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DivideUpstream <span class="title">doSelect</span><span class="params">(<span class="keyword">final</span> List&lt;DivideUpstream&gt; upstreamList, <span class="keyword">final</span> String ip)</span> </span>&#123;</span><br><span class="line">    	<span class="comment">//计算出总权重数</span></span><br><span class="line">        <span class="keyword">int</span> totalWeight = calculateTotalWeight(upstreamList);</span><br><span class="line">        <span class="comment">//检查所有的 upstreams 分配到的权重是否完全相等</span></span><br><span class="line">        <span class="keyword">boolean</span> sameWeight = isAllUpStreamSameWeight(upstreamList);</span><br><span class="line">        <span class="comment">//如果总权重数 &gt; 0 且 upstream 分配到的权重都不相等</span></span><br><span class="line">        <span class="keyword">if</span> (totalWeight &gt; <span class="number">0</span> &amp;&amp; !sameWeight) &#123;</span><br><span class="line">        	<span class="comment">// 返回选择的 upstream</span></span><br><span class="line">            <span class="keyword">return</span> random(totalWeight, upstreamList);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// If the weights are the same or the weights are 0 then random</span></span><br><span class="line">        <span class="comment">// 如果 upstreams 分配到的权重完全相等，或者 总权重数 = 0</span></span><br><span class="line">        <span class="keyword">return</span> random(upstreamList);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isAllUpStreamSameWeight</span><span class="params">(<span class="keyword">final</span> List&lt;DivideUpstream&gt; upstreamList)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> sameWeight = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">int</span> length = upstreamList.size();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">            <span class="keyword">int</span> weight = getWeight(upstreamList.get(i));</span><br><span class="line">            <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; weight != getWeight(upstreamList.get(i - <span class="number">1</span>))) &#123;</span><br><span class="line">                <span class="comment">// 依次和前一个比较权重是否相等，如果不等就跳出当前循环</span></span><br><span class="line">                sameWeight = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sameWeight;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">calculateTotalWeight</span><span class="params">(<span class="keyword">final</span> List&lt;DivideUpstream&gt; upstreamList)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// total weight</span></span><br><span class="line">        <span class="keyword">int</span> totalWeight = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (DivideUpstream divideUpstream : upstreamList) &#123;</span><br><span class="line">            <span class="keyword">int</span> weight = getWeight(divideUpstream);</span><br><span class="line">            <span class="comment">// 计算总权重数</span></span><br><span class="line">            totalWeight += weight;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> totalWeight;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> DivideUpstream <span class="title">random</span><span class="params">(<span class="keyword">final</span> <span class="keyword">int</span> totalWeight, <span class="keyword">final</span> List&lt;DivideUpstream&gt; upstreamList)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// If the weights are not the same and the weights are greater than 0, then random by the total number of weights</span></span><br><span class="line">        <span class="keyword">int</span> offset = RANDOM.nextInt(totalWeight);</span><br><span class="line">        <span class="comment">// Determine which segment the random value falls on</span></span><br><span class="line">        <span class="keyword">for</span> (DivideUpstream divideUpstream : upstreamList) &#123;</span><br><span class="line">            offset -= getWeight(divideUpstream);</span><br><span class="line">            <span class="keyword">if</span> (offset &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> divideUpstream;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> upstreamList.get(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> DivideUpstream <span class="title">random</span><span class="params">(<span class="keyword">final</span> List&lt;DivideUpstream&gt; upstreamList)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> upstreamList.get(RANDOM.nextInt(upstreamList.size()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来是 一个巧妙的负载均衡策略：RoundRobinLoadBalance，首先我们来了解一下相关的概念：</p>
+<p>Nginx 的负载均衡调度算法默认就是 round robin，也就是轮询调度算法。根据维基百科的介绍：术语循环/轮转/轮替（英语：Round-robin）用于多种情况中，通常指将多个某物轮流用于某事，例如“逐户派对”（round-robin-party）中所有参与者要挨家挨户地拜访每位参与者的住处并参加那里的小型聚会。联名信（round-robin letter）往往是指一大群下属为批评其领导而写的一封信，这种信一般只在签名人数多到难于逐个报复后才会寄出。</p>
+<p>在负载均衡算法上的应用，也就是由 upstreams 轮流来处理请求，但在 Soul 中 是加权轮询调度的，查阅<a href="https://www.nginx.com/resources/glossary/round-robin-load-balancing/" target="_blank" rel="noopener">Nginx 官方文档关于轮询调度算法的文章</a>，发现对加权轮询调度有以下的解释：</p>
+<p>Weighted round robin – A weight is assigned to each server based on criteria chosen by the site administrator; the most commonly used criterion is the server’s traffic‑handling capacity. The higher the weight, the larger the proportion of client requests the server receives. If, for example, server A is assigned a weight of 3 and server B a weight of 1, the load balancer forwards 3 requests to server A for each 1 it sends to server B.</p>
+<p>加权轮询是根据站点管理员选择的标准为每个服务器分配一个权重的策略。最常用的标准是服务器的流量处理能力。权重越高，服务器接收的客户端请求的比例越大。例如，如果为服务器A分配了3的权重，为服务器B分配了1的权重，那么负载均衡器每向服务器B转发 1 个请求，就会向服务器A转发 3 个请求，因为服务器A权重更高，代表他处理流量的能力更强。</p>
+<p>加权轮询算法的原理就是：根据服务器的不同处理能力，给每个服务器分配不同的权值，使其能够接受相应权值数的服务请求。</p>
+<p>下面我们深入源码来看是如何实现的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Join</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RoundRobinLoadBalance</span> <span class="keyword">extends</span> <span class="title">AbstractLoadBalance</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//回收周期为 60000 毫秒，即 60 秒</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> recyclePeriod = <span class="number">60000</span>;</span><br><span class="line">	<span class="comment">//函数权重 map</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;String, ConcurrentMap&lt;String, WeightedRoundRobin&gt;&gt; methodWeightMap = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;(<span class="number">16</span>);</span><br><span class="line">	<span class="comment">//更新锁，用 AtomicBoolean 实现</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AtomicBoolean updateLock = <span class="keyword">new</span> AtomicBoolean();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DivideUpstream <span class="title">doSelect</span><span class="params">(<span class="keyword">final</span> List&lt;DivideUpstream&gt; upstreamList, <span class="keyword">final</span> String ip)</span> </span>&#123;</span><br><span class="line">        String key = upstreamList.get(<span class="number">0</span>).getUpstreamUrl();</span><br><span class="line">        ConcurrentMap&lt;String, WeightedRoundRobin&gt; map = methodWeightMap.get(key);</span><br><span class="line">        <span class="comment">//将 第一个 upstream url 放入 函数权重 map</span></span><br><span class="line">        <span class="keyword">if</span> (map == <span class="keyword">null</span>) &#123;</span><br><span class="line">            methodWeightMap.putIfAbsent(key, <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;(<span class="number">16</span>));</span><br><span class="line">            map = methodWeightMap.get(key);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> totalWeight = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">long</span> maxCurrent = Long.MIN_VALUE;</span><br><span class="line">        <span class="keyword">long</span> now = System.currentTimeMillis();</span><br><span class="line">        DivideUpstream selectedInvoker = <span class="keyword">null</span>;</span><br><span class="line">        WeightedRoundRobin selectedWRR = <span class="keyword">null</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (DivideUpstream upstream : upstreamList) &#123;</span><br><span class="line">            String rKey = upstream.getUpstreamUrl();</span><br><span class="line">            WeightedRoundRobin weightedRoundRobin = map.get(rKey);</span><br><span class="line">            <span class="keyword">int</span> weight = getWeight(upstream);</span><br><span class="line">            <span class="comment">//如果 weightedRoundRobin 为 null，则实例化一个新的 WeightedRoundRobin，放入 map 中</span></span><br><span class="line">            <span class="keyword">if</span> (weightedRoundRobin == <span class="keyword">null</span>) &#123;</span><br><span class="line">                weightedRoundRobin = <span class="keyword">new</span> WeightedRoundRobin();</span><br><span class="line">                weightedRoundRobin.setWeight(weight);</span><br><span class="line">                map.putIfAbsent(rKey, weightedRoundRobin);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (weight != weightedRoundRobin.getWeight()) &#123;</span><br><span class="line">                <span class="comment">// 如果权重不一致，则更新</span></span><br><span class="line">                weightedRoundRobin.setWeight(weight);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//将当前权重加到 current 中</span></span><br><span class="line">            <span class="keyword">long</span> cur = weightedRoundRobin.increaseCurrent();</span><br><span class="line">            <span class="comment">//设置最后更新时间</span></span><br><span class="line">            weightedRoundRobin.setLastUpdate(now);</span><br><span class="line">            <span class="comment">//如果两个权重相等，则第一个被遍历的会被选中</span></span><br><span class="line">            <span class="keyword">if</span> (cur &gt; maxCurrent) &#123;</span><br><span class="line">                <span class="comment">// 如果当前值大于最大值，则更新最大值</span></span><br><span class="line">                maxCurrent = cur;</span><br><span class="line">                <span class="comment">// 确定当前 upstream 为被选中的调用者</span></span><br><span class="line">                selectedInvoker = upstream;</span><br><span class="line">                <span class="comment">//被选择的加权轮询调度</span></span><br><span class="line">                selectedWRR = weightedRoundRobin;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//总权重数汇总</span></span><br><span class="line">            totalWeight += weight;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//如果更新锁未被持有且 upstreamList 大小与 map 不一致且 加锁成功</span></span><br><span class="line">        <span class="keyword">if</span> (!updateLock.get() &amp;&amp; upstreamList.size() != map.size() &amp;&amp; updateLock.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 复制一份 map，然后遍历 newMap 并移除 当前时间减去最后更新时间大于 60秒的元素</span></span><br><span class="line">                ConcurrentMap&lt;String, WeightedRoundRobin&gt; newMap = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;(map);</span><br><span class="line">                newMap.entrySet().removeIf(item -&gt; now - item.getValue().getLastUpdate() &gt; recyclePeriod);</span><br><span class="line">                <span class="comment">// 再将 key 指向新的 newMap</span></span><br><span class="line">                methodWeightMap.put(key, newMap);</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            	<span class="comment">//最后施放锁</span></span><br><span class="line">                updateLock.set(<span class="keyword">false</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (selectedInvoker != <span class="keyword">null</span>) &#123;</span><br><span class="line">        	<span class="comment">//被选中的 weighted round robin 的 current 减去总节点权重分</span></span><br><span class="line">            selectedWRR.sel(totalWeight);</span><br><span class="line">            <span class="keyword">return</span> selectedInvoker;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// should not happen here</span></span><br><span class="line">        <span class="keyword">return</span> upstreamList.get(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>光看代码，逻辑还是有点不清晰，假设我们有三个节点ABC，权重分别是 5，3，2，在7次请求的情况下：</p>
+<table>
+<thead>
+<tr>
+<th>请求次数</th>
+<th>请求前weight</th>
+<th>current</th>
+<th>选中节点</th>
+<th>请求后weight</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>A=5,B=3,C=2</td>
+<td>5</td>
+<td>A</td>
+<td>A=0,B=6,C=4</td>
+</tr>
+<tr>
+<td>2</td>
+<td>A=0,B=6,C=4</td>
+<td>6</td>
+<td>B</td>
+<td>A=5,B=2,C=6</td>
+</tr>
+<tr>
+<td>3</td>
+<td>A=5,B=2,C=6</td>
+<td>6</td>
+<td>C</td>
+<td>A=10,B=5,C=-1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>A=10,B=5,C=-1</td>
+<td>10</td>
+<td>A</td>
+<td>A=6,B=8,C=1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>A=6,B=8,C=1</td>
+<td>8</td>
+<td>B</td>
+<td>A=11,B=1,C=3</td>
+</tr>
+<tr>
+<td>6</td>
+<td>A=11,B=1,C=3</td>
+<td>11</td>
+<td>A</td>
+<td>A=7,B=4,C=5</td>
+</tr>
+<tr>
+<td>7</td>
+<td>A=7,B=4,C=5</td>
+<td>7</td>
+<td>A</td>
+<td>A=-2,B=7,C=7</td>
+</tr>
+<tr>
+<td>我们可以看到第 7 次 请求后的 权重 B 和 C 都是7，如何分配呢？答案就在源码中</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (cur &gt; maxCurrent) &#123;</span><br><span class="line">    maxCurrent = cur;</span><br><span class="line">    selectedInvoker = upstream;</span><br><span class="line">    selectedWRR = weightedRoundRobin;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一个被遍历的 upstream 会被选中，所以下一次请求将会转发到 B 节点上。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>RoundRobinLoadBalance 在设计上跟 Nginx 是类似的，我们可以理解为工作效率越高的程序员接的活越多，责任也越大，因为他在领导心中的权重最高。🤣<br>加锁使用 AtomicBoolean 实现，有效降低了锁的开销。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>interview</tag>
+      </tags>
+  </entry>
 </search>
