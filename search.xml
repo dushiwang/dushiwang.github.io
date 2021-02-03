@@ -698,4 +698,54 @@
         <tag>interview</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Soul 网关源码分析（十四）sentinel 插件</title>
+    <url>/2021/02/04/Soul-%E7%BD%91%E5%85%B3%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%EF%BC%88%E5%8D%81%E5%9B%9B%EF%BC%89sentinel-%E6%8F%92%E4%BB%B6/</url>
+    <content><![CDATA[<p>Soul网关中限流熔断的另外一个手段是使用 sentinel 插件，首先我们来粗略了解一下 Sentinel。</p>
+<a id="more"></a>
+<p>Sentinel 是面向分布式服务架构的流量控制组件，主要以流量为切入点，从流量控制、熔断降级、系统自适应保护等维度上对微服务的稳定性提供保障。</p>
+<p>Hystrix 通过线程池的方式，来对访问的资源进行了隔离，虽然将资源之间彻底隔离开来，但是却增加了线程切换的成本，线程池大小的分配也是需要针对对应资源做预估计算和设置的。<br>而 Sentinel 针对这个问题提供了两种解决方案:</p>
+<ol>
+<li><p>通过并发线程数进行限制</p>
+<p> Sentinel 会通过限制资源并发线程的数量来减少不稳定资源对其它资源的影响。这样没有线程切换的损耗，也无需预先分配线程池的大小。当某个资源出现响应时间变长，资源的线程数的逐步堆加，到达一定的数量之后，对该资源的新请求就会被拒绝。堆积的线程完成任务后才开始继续接收请求。</p>
+</li>
+<li><p>通过响应时间对资源进行降级</p>
+<p> Sentinel 还可以通过响应时间来快速降级不稳定的资源。当资源出现响应时间过长的现象并突破阈值，所有对该资源的访问都会被直接拒绝，直到过了指定的时间窗口之后才重新恢复。</p>
+</li>
+</ol>
+<p>Sentinel 插件目录如下</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.</span><br><span class="line">├── pom.xml</span><br><span class="line">├── soul-plugin-sentinel.iml</span><br><span class="line">└── src</span><br><span class="line">    └── main</span><br><span class="line">        └── java</span><br><span class="line">            └── org</span><br><span class="line">                └── dromara</span><br><span class="line">                    └── soul</span><br><span class="line">                        └── plugin</span><br><span class="line">                            └── sentinel</span><br><span class="line">                                ├── SentinelPlugin.java &#x2F;&#x2F;Sentinel 插件实现，从配置中读取设置并做对应处理，再把请求传递到插件链中</span><br><span class="line">                                ├── fallback</span><br><span class="line">                                │   └── SentinelFallbackHandler.java &#x2F;&#x2F;根据 Sentinel 抛出的异常分别做相应的处理</span><br><span class="line">                                └── handler</span><br><span class="line">                                    └── SentinelRuleHandle.java &#x2F;&#x2F;配置 sentinel 规则</span><br></pre></td></tr></table></figure>
+<p>下面是各个配置的功能和含义：</p>
+<p>whether to open the degrade (1 or 0) 是否开启降级</p>
+<p>degrade count 降级阈值</p>
+<p>degrade type </p>
+<ul>
+<li>slow call ratio 慢请求比率</li>
+<li>exception ratio 异常比率</li>
+<li>exception number strategy 异常数</li>
+</ul>
+<p>degrade window size 降级的时间，单位为秒</p>
+<p>whether control behavior is enabled (1 or 0) 是否开启流控</p>
+<p>control behavior</p>
+<ul>
+<li>direct rejection by default 直接拒绝</li>
+<li>warm up 慢热启动</li>
+<li>constant speed queuing 排队等待</li>
+<li>preheating uniformly queued </li>
+</ul>
+<p>grade count 流控阈值</p>
+<p>grade type</p>
+<ul>
+<li>QPS 按QPS流控</li>
+<li>number of concurrent threads 按并发线程数</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>Soul</tag>
+      </tags>
+  </entry>
 </search>
